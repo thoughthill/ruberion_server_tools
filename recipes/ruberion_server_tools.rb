@@ -188,35 +188,57 @@ end
 # Sphinx Index Tasks
 # ==========================
 
+
 namespace :ultrasphinx do
   
+  desc "Check if sphinx daemon is running"
+  task :sphinx_status, :roles => :app do
+    invoke_command "cd #{current_path} && RAILS_ENV=#{rails_env} rake ultrasphinx:daemon:status"
+  end
+
   desc "Ultrasphinx Bootstrap"
   task :bootstrap, :roles => :app do
-    invoke_command "cd #{current_path} && RAILS_ENV=#{rails_env} rake ultrasphinx:bootstrap" if using_ultrasphinx?
+    if using_ultrasphinx?
+      invoke_command "cd #{current_path} && RAILS_ENV=#{rails_env} rake ultrasphinx:bootstrap"
+    end
   end
 
   desc "Update Index"
   task :index, :roles => :app do
-    invoke_command "cd #{current_path} && RAILS_ENV=#{rails_env} rake ultrasphinx:index" if using_ultrasphinx?
+    if using_ultrasphinx?
+      invoke_command "cd #{current_path} && RAILS_ENV=#{rails_env} rake ultrasphinx:index"
+    end
   end
 
   desc "Configure Sphinx"
   task :configure, :roles => :app do
-    invoke_command "cd #{current_path} && RAILS_ENV=#{rails_env} rake ultrasphinx:configure" if using_ultrasphinx?
+    if using_ultrasphinx?
+      invoke_command "cd #{current_path} && RAILS_ENV=#{rails_env} rake ultrasphinx:configure"
+    end
   end
 
   desc "Stop Sphinx daemon"
   task :stop, :roles => :app do
-    invoke_command "cd #{current_path} && RAILS_ENV=#{rails_env} rake ultrasphinx:daemon:stop" if using_ultrasphinx?
+    result = run_and_return("cd #{current_path} && RAILS_ENV=#{rails_env} rake ultrasphinx:daemon:status")
+    if result.match("Daemon is running")
+      invoke_command "cd #{current_path} && RAILS_ENV=#{rails_env} rake ultrasphinx:daemon:stop"
+    else
+      puts "Sphinx daemon Not Running."
+    end
   end
 
   desc "Start Sphinx daemon"
   task :start, :roles => :app do
-    invoke_command "cd #{current_path} && RAILS_ENV=#{rails_env} rake ultrasphinx:daemon:start" if using_ultrasphinx?
+    result = run_and_return("cd #{current_path} && RAILS_ENV=#{rails_env} rake ultrasphinx:daemon:status")
+    if result.match("Daemon is stopped")
+      invoke_command "cd #{current_path} && RAILS_ENV=#{rails_env} rake ultrasphinx:daemon:start"
+    else
+      puts "Sphinx daemon already Running."
+    end
   end
 
   desc "Restart Sphinx daemon"
   task :restart, :roles => :app do
-    invoke_command "cd #{current_path} && RAILS_ENV=#{rails_env} rake ultrasphinx:daemon:restart" if using_ultrasphinx?
+    invoke_command "cd #{current_path} && RAILS_ENV=#{rails_env} rake ultrasphinx:daemon:restart"
   end
 end

@@ -60,6 +60,10 @@ set(:mysql_user, "root")
 set(:mysql_password, "")
 
 # Default sphinx variables
-set(:sphinx_db_path, "/var/db/sphinx")
+set(:sphinx_use_delta, false)
+set(:sphinx_db_path, "/opt/local/var/db/sphinx/")
 set(:sphinx_mem_limit, "128M")
 set(:sphinx_delta_time, 14400)
+set(:sphinx_server_port, 3312)
+set(:sphinx_min_word_len, 3)
+
