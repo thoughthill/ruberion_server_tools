@@ -1,0 +1,65 @@
+require "erb"
+
+set(:application, "<your-domain.com>")
+
+# SVN
+set(:svn_user, ENV['svn_user'] || "<your-svn-username>")
+set(:svn_password, Proc.new { Capistrano::CLI.password_prompt('Enter your SVN password: ') })
+set(:repository, Proc.new { "--username #{svn_user} " + "--password #{svn_password} " +
+                            "--no-auth-cache " + "http://<your-svn-server>/#{application}/trunk/" })
+
+
+# Servers
+set(:webserver1, "<your-domain.com>")
+role(:web, webserver1)
+role(:app, webserver1)
+role(:db,  webserver1, :primary => true)
+
+
+# Mongrel
+set(:mongrel_port, "<your-mongrel-port>") # we usually jump in groups of 10 starting at 8001
+set(:mongrel_servers, <num-of-mongrel-servers>)
+
+# Nginx Domain Names for vhosts
+# DO NOT PUT A COMMA OR ANYTHING IN BETWEEN THE SERVER NAMES!!!
+set(:domain_names, ["<domain.com> <www.domain.com>"])
+
+# Set to true if we are using these items
+set(:using_ultrasphinx?, false)
+set(:using_ferret?, false)
+set(:using_memcached?, false)
+
+# AFTER HOOKS
+after(:deploy, "ultrasphinx:configure", "ultrasphinx:index") if using_ultrasphinx?
+
+
+# BELOW THIS LINE DOESN'T NEED TO BE CHANGED VERY OFTEN
+##################################################################################
+
+# always in production mode when we deploy
+set(:rails_env, "production")
+
+# this is the default permission we usually use
+set(:chmod755, %w(script))
+
+# we want this to be our standard so we leave it here
+set(:deploy_to, "/var/www/apps/#{application}")
+
+# This actually probably will change
+set(:user, "root")
+set(:use_sudo, false)
+
+# This is usually the same spoot
+set(:mongrel_pid, "#{deploy_to}/#{shared_dir}/pids/mongrel.pid")
+set(:mongrel_conf, "#{deploy_to}/#{shared_dir}/config/mongrel_cluster.yml")
+
+# For our purposes this usually is the same
+set(:production_db, "#{application.gsub('.', '_')}_production")
+set(:mysql_socket, "/var/run/mysqld/mysqld.sock")
+set(:mysql_user, "root")
+set(:mysql_password, "")
+
+# Default sphinx variables
+set(:sphinx_db_path, "/var/db/sphinx")
+set(:sphinx_mem_limit, "128M")
+set(:sphinx_delta_time, 14400)

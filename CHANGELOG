@@ -1,0 +1,24 @@
+[March 11, 2008]
+
+* Added Support for Ultrasphix with Sphinx 0.9.8RC
+* Added defaul.base template
+
+
+[March 8, 2008]
+
+* Added Support for memcached.yml  [Fred]
+
+* Fixed a bug so that minimum mongrels is 1 instead of 2 [fred]
+
+* Fixed a bug in nginx.vhost.conf.erb 	[Fred]
+	adding string and integer is not possible :)
+	
+* Fixed database.yml.erb to support mysql user, password and database name
+	from within deploy.rb [Fred]
+
+* Added support for Ultrasphinx rake tasks [Fred]
+
+* Added Quick Deploy Task [Fred]
+	it will only update the current branch and restart mongrels
+
+* Add tasks to create Mysql Databases for first setup [Fred]

@@ -1,0 +1,7 @@
+cwd: <%= current_path %>
+log_file: <%= shared_path %>/log/mongrel.log
+port: <%= mongrel_port.to_i %>
+environment: production
+address: 127.0.0.1
+pid_file: "<%= shared_path %>/pids/mongrel.pid"
+servers: <%= mongrel_servers.to_i %>
