@@ -1,3 +1,9 @@
+[April 29, 2008]
+
+* added "cap env:list"
+* changed the order of ultrasphinx loading and stoping
+* updated deploy.example
+
 [March 11, 2008]
 
 * Added Support for Ultrasphix with Sphinx 0.9.8RC
