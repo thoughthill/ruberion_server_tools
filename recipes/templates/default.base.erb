@@ -24,17 +24,16 @@
 indexer
 {  
   mem_limit = <%= sphinx_mem_limit %>
-
   # Ultrasphinx-specific key
-  delta = <%= sphinx_delta_time %> 
+  #delta = <%= sphinx_delta_time %> 
 }
 
 # Daemon options
 searchd
 {  
   # What interface the search daemon should listen on and where to store its logs
-  address = 0.0.0.0
-  port = 3312
+  address = 127.0.0.1
+  port = <%= sphinx_server_port %>
   seamless_rotate = 1
   log = <%= path %>log/searchd.log
   query_log = <%= path %>log/query.log
@@ -51,8 +50,8 @@ client
   dictionary_name = ap
   
   # How your application connects to the search daemon (not necessarily the same as above)
-  server_host = localhost
-  server_port = 3312
+  server_host = 127.0.0.1
+  server_port = <%= sphinx_server_port %>
 }
 
 # Individual SQL source options
@@ -70,7 +69,7 @@ index
   docinfo = extern # Just leave this alone
   morphology = stem_en
   stopwords = # <%= path %>/ap-stopwords.txt
-  min_word_len = 1
+  min_word_len = <%= sphinx_min_word_len %>
 
   # HTML-specific options
   html_strip = 0

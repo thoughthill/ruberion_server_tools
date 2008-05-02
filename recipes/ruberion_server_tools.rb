@@ -29,6 +29,34 @@ class Capistrano::Configuration
     end
     return output.to_s
   end
+  
+  def ultrasphinx_configured?
+    result = run_and_return("ls -al #{shared_path}/config/ultrasphinx/")
+    if result.match("default.base")
+      return true
+    else
+      return false
+    end
+  end
+  
+  def check_answer
+    puts "Press Y to Continue or N no Cancel."
+    yes_no = gets
+    yes_no.chomp!
+    case yes_no
+      when "Y","y","Yes","yes"
+        ans = true
+      when "N", "n", "No", "no"
+        puts "You chose to CANCEL, bye bye."
+        ans = false
+      when 'q', 'quit'
+        puts "You chose to QUIT, bye bye."
+        exit
+      else
+        puts "Invalid Answer."
+        check_answer
+    end
+  end
 
 end
 
@@ -37,10 +65,15 @@ namespace :config do
     
   desc "Drop Mysql database" 
   task :drop_mysql_db do
-    puts "Are you sure you want to DROP #{production_db}?"
-    puts "You have 10 seconds to cancel..."
-    sleep 11
-    run "mysqladmin -u #{mysql_user} -f drop #{production_db}"
+    result = run_and_return("mysql -u root -e 'show databases;'")
+    if result.match(production_db)
+      puts "Are you sure you want to DROP #{production_db}?"
+      puts "You have 10 seconds to cancel..."
+      sleep 10
+      run "mysqladmin -u #{mysql_user} -f drop #{production_db}"
+    else
+      puts "Database does not exist"
+    end
   end
   
   desc "Create Mysql database" 
@@ -101,7 +134,9 @@ namespace :config do
   task :ultrasphinx_default_base do
     return unless using_ultrasphinx?
     result = run_and_return("ls #{shared_path}/config/ultrasphinx")
-    unless result.match(/default\.base/)
+    if result.match(/default\.base/)
+      inform "default.base already exists, delete it first."
+    else
       contents = render_erb_template(File.dirname(__FILE__) + "/templates/default.base.erb")
       put contents, "#{shared_path}/config/ultrasphinx/default.base"
       inform "default.base copied succesfully."
@@ -193,52 +228,79 @@ namespace :ultrasphinx do
   
   desc "Check if sphinx daemon is running"
   task :sphinx_status, :roles => :app do
-    invoke_command "cd #{current_path} && RAILS_ENV=#{rails_env} rake ultrasphinx:daemon:status"
+    begin
+      invoke_command "cd #{current_path} && RAILS_ENV=#{rails_env} rake ultrasphinx:daemon:status"
+    rescue
+      puts "Seems like it's not deployed yet, skip"
+    end
   end
 
   desc "Ultrasphinx Bootstrap"
-  task :bootstrap, :roles => :app do
+  task :bootstrap, :roles => :app do    
     if using_ultrasphinx?
       invoke_command "cd #{current_path} && RAILS_ENV=#{rails_env} rake ultrasphinx:bootstrap"
+    else
+      puts "Enable ultrasphinx on deploy.rb first."
     end
   end
 
   desc "Update Index"
   task :index, :roles => :app do
-    if using_ultrasphinx?
+    if using_ultrasphinx? && ultrasphinx_configured?
       invoke_command "cd #{current_path} && RAILS_ENV=#{rails_env} rake ultrasphinx:index"
+    else
+      puts "Enable ultrasphinx on deploy.rb or run 'cap config:ultrasphinx_default_base'"
     end
   end
 
   desc "Configure Sphinx"
   task :configure, :roles => :app do
     if using_ultrasphinx?
-      invoke_command "cd #{current_path} && RAILS_ENV=#{rails_env} rake ultrasphinx:configure"
+      if ultrasphinx_configured?
+        invoke_command "cd #{current_path} && RAILS_ENV=#{rails_env} rake ultrasphinx:configure"
+      else
+        puts "The file config/ultrasphinx/default.base is missing. Create it first"
+        puts " you can run cap config:ultrasphinx_default_base"
+      end
     end
   end
 
   desc "Stop Sphinx daemon"
   task :stop, :roles => :app do
-    result = run_and_return("cd #{current_path} && RAILS_ENV=#{rails_env} rake ultrasphinx:daemon:status")
-    if result.match("Daemon is running")
-      invoke_command "cd #{current_path} && RAILS_ENV=#{rails_env} rake ultrasphinx:daemon:stop"
-    else
-      puts "Sphinx daemon Not Running."
+    begin
+      result = run_and_return("cd #{current_path} && RAILS_ENV=#{rails_env} rake ultrasphinx:daemon:status")
+      if result.match("Daemon is running")
+        invoke_command "cd #{current_path} && RAILS_ENV=#{rails_env} rake ultrasphinx:daemon:stop"
+      else
+        puts "Sphinx daemon Not Running."
+      end
+    rescue
+      puts "Seems like it's not deployed yet, skip"
     end
   end
 
   desc "Start Sphinx daemon"
   task :start, :roles => :app do
-    result = run_and_return("cd #{current_path} && RAILS_ENV=#{rails_env} rake ultrasphinx:daemon:status")
-    if result.match("Daemon is stopped")
-      invoke_command "cd #{current_path} && RAILS_ENV=#{rails_env} rake ultrasphinx:daemon:start"
-    else
-      puts "Sphinx daemon already Running."
+    begin
+      result = run_and_return("cd #{current_path} && RAILS_ENV=#{rails_env} rake ultrasphinx:daemon:status")
+      if result.match("Daemon is stopped")
+        invoke_command "cd #{current_path} && RAILS_ENV=#{rails_env} rake ultrasphinx:daemon:start"
+      else
+        puts "Sphinx daemon already Running."
+      end
+    rescue
+      puts "Seems like it's not deployed yet, skip"
+      puts "maybe you should deploy first or run cap config:ultrasphinx_default_base"
     end
   end
 
   desc "Restart Sphinx daemon"
   task :restart, :roles => :app do
-    invoke_command "cd #{current_path} && RAILS_ENV=#{rails_env} rake ultrasphinx:daemon:restart"
+    begin
+      invoke_command "cd #{current_path} && RAILS_ENV=#{rails_env} rake ultrasphinx:daemon:restart"
+    rescue
+      puts "Seems like it's not deployed yet, skip"
+      puts "maybe you should deploy first or run cap config:ultrasphinx_default_base"
+    end
   end
 end
