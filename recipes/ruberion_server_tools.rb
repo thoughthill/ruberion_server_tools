@@ -85,7 +85,8 @@ namespace :config do
   desc "Create shared/config."
   task :shared_config do
     run "mkdir -p #{shared_path}/config"
-    run "mkdir -p #{shared_path}/config/ultrasphinx" if ultrasphinx
+    run "mkdir -p #{shared_path}/config/ultrasphinx" if using_ultrasphinx?
+    run "mkdir -p #{sphinx_db_path}/#{rails_env}" if using_ultrasphinx?
   end
   
   desc "Create memcached.yml"
@@ -115,7 +116,7 @@ namespace :config do
   task :nginx_conf, :roles => :app do
     result = render_erb_template(File.dirname(__FILE__) + "/templates/nginx.vhost.conf.erb")
     put result, "/tmp/nginx.vhost.conf"
-    sudo "cp /tmp/nginx.vhost.conf #{shared_path}/config/nginx.conf"
+    run "cp /tmp/nginx.vhost.conf #{shared_path}/config/nginx.conf"
     inform "You must edit /etc/nginx/nginx.conf to include the vhost config file."
   end
 
@@ -142,6 +143,13 @@ namespace :config do
       inform "default.base copied succesfully."
     end
   end
+  
+  desc "Create Index Folder for Ultrasphinx"
+  task :ultrasphinx_index_folders do
+    return unless using_ultrasphinx?
+    inform "Creating Sphinx index folder #{sphinx_db_path}" 
+    run "mkdir -p #{sphinx_db_path}/#{rails_env}"
+  end
 
   desc "Main method for creating shared configs"
   task :create_shared_config do
@@ -152,6 +160,7 @@ namespace :config do
     nginx_conf
     mongrel_cluster_yml
     memcached_yml if using_memcached?
+    ultrasphinx_index_folders if using_ultrasphinx?
     ultrasphinx_default_base if using_ultrasphinx?
   end
 
