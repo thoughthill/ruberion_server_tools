@@ -1,3 +1,8 @@
+* some code refractoring 
+* Added support for juggernaut (since deploying clockingit)
+* Added Ferret Support (since deploying clockingit)
+	added ferret_server.yml.erb template
+* added git to deploy.example
 * Updated default.base for ultrasphinx
 
 [April 29, 2008]

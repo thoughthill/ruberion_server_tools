@@ -1,0 +1,23 @@
+#-------------------- Push Server Configuration ---------------------------#
+
+#This is the port that the push server will be on.
+PUSH_PORT: "<%= juggernaut_push_port %>"
+
+#This is the host that the push server will be on.
+#Usually it would be 0.0.0.0
+PUSH_HOST: "<%= juggernaut_push_host %>"
+
+#This should be the url as seen from the browser.
+#Flash's xmlsocket can only connect to addresses in the same domain
+#or subdomain. For example, if people access your app from www.test.com than this
+#should be "test". Omit the port number and the 'http://'.
+PUSH_HELPER_HOST: "<%= push_helper_host %>"
+
+#This is a 'secret' send by the broadcaster to validate identity.
+PUSH_SECRET: "<%= juggernaut_secret %>"
+
+#This must be the host that your crossdomain policy is located at
+CROSSDOMAIN: "<%= juggernaut_crossdomain %>"
+
+#Allow crossdomain requests from where?
+ALLOW_CROSSDOMAIN: "<%= juggernaut_allow_crossdomain %>"

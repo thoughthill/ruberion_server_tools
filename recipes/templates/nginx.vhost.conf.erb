@@ -91,7 +91,11 @@ server {
 
   error_page   500 502 503 504  /500.html;
   location = /500.html {
-    root   <%= deploy_to %>/current/public;
+    root <%= deploy_to %>/current/public;
   }
+
+	location ~* ^.+\.(jpg|js|jpeg|png|ico|gif|txt|js|css|swf|zip|rar|avi|exe|mpg|mp3|wav|mpeg|asf|wmv)$ {
+		root <%= deploy_to %>/current/public;
+	}
 
 }

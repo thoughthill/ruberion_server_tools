@@ -38,63 +38,41 @@ class Capistrano::Configuration
       return false
     end
   end
-  
-  def check_answer
-    puts "Press Y to Continue or N no Cancel."
-    yes_no = gets
-    yes_no.chomp!
-    case yes_no
-      when "Y","y","Yes","yes"
-        ans = true
-      when "N", "n", "No", "no"
-        puts "You chose to CANCEL, bye bye."
-        ans = false
-      when 'q', 'quit'
-        puts "You chose to QUIT, bye bye."
-        exit
-      else
-        puts "Invalid Answer."
-        check_answer
-    end
-  end
 
 end
 
 ### CONFIG Tasks that suits us ###
 namespace :config do
-    
-  desc "Drop Mysql database" 
-  task :drop_mysql_db do
-    result = run_and_return("mysql -u root -e 'show databases;'")
-    if result.match(production_db)
-      puts "Are you sure you want to DROP #{production_db}?"
-      puts "You have 10 seconds to cancel..."
-      sleep 10
-      run "mysqladmin -u #{mysql_user} -f drop #{production_db}"
-    else
-      puts "Database does not exist"
-    end
-  end
   
   desc "Create Mysql database" 
   task :create_mysql_db do
-    inform "Going to create Mysql Database now"
-    run "mysqladmin -u #{mysql_user} create #{production_db}"
+    result = run_and_return("mysql -u root -e 'show databases;'")
+    if result.match(production_db)
+      inform "Database #{production_db} already exists."
+    else
+      inform "Database does not exist, Going to create Mysql Database now"
+      run "mysqladmin -u #{mysql_user} create #{production_db}"
+    end
   end
 
-  desc "Create shared/config."
+  desc "Create shared folders."
   task :shared_config do
     run "mkdir -p #{shared_path}/config"
-    run "mkdir -p #{shared_path}/config/ultrasphinx" if using_ultrasphinx?
-    run "mkdir -p #{sphinx_db_path}/#{rails_env}" if using_ultrasphinx?
+    run "mkdir -p #{shared_path}/sessions"
+    run "mkdir -p #{shared_path}/index" if using_ferret?
+    if using_ultrasphinx?
+      run "mkdir -p #{sphinx_db_path}"
+      run "mkdir -p #{shared_path}/config/ultrasphinx"
+      run "mkdir -p #{sphinx_db_path}/#{rails_env}"
+    end
   end
   
   desc "Create memcached.yml"
   task :memcached_yml, :roles => :app do
-    return unless using_memcached?
-    # Copy memcached.yml if it doesn't exist.
     result = run_and_return("ls #{shared_path}/config")
-    unless result.match(/memcached\.yml/)
+    if result.match(/memcached\.yml/)
+      inform "memcached.yml already exists."
+    else
       contents = render_erb_template(File.dirname(__FILE__) + "/templates/memcached.yml.erb")
       put contents, "#{shared_path}/config/memcached.yml"
       inform "memcached.yml copied succesfully."
@@ -103,9 +81,10 @@ namespace :config do
 
   desc "Create database.yml"
   task :database_yml do
-    # Copy database.yml if it doesn't exist.
     result = run_and_return("ls #{shared_path}/config")
-    unless result.match(/database\.yml/)
+    if result.match(/database\.yml/)
+      inform "database.yml already exists."
+    else
       contents = render_erb_template(File.dirname(__FILE__) + "/templates/database.yml.erb")
       put contents, "#{shared_path}/config/database.yml"
       inform "database.yml copied succesfully."
@@ -113,18 +92,24 @@ namespace :config do
   end
 
   desc "Setup Nginx vhost config"
-  task :nginx_conf, :roles => :app do
-    result = render_erb_template(File.dirname(__FILE__) + "/templates/nginx.vhost.conf.erb")
-    put result, "/tmp/nginx.vhost.conf"
-    run "cp /tmp/nginx.vhost.conf #{shared_path}/config/nginx.conf"
-    inform "You must edit /etc/nginx/nginx.conf to include the vhost config file."
+  task :create_nginx_conf, :roles => :app do
+    result = run_and_return("ls #{shared_path}/config")
+    if result.match(/nginx\.conf/)
+      inform "nginx.conf already exists."
+    else
+      result = render_erb_template(File.dirname(__FILE__) + "/templates/nginx.vhost.conf.erb")
+      put result, "/tmp/nginx.vhost.conf"
+      run "cp /tmp/nginx.vhost.conf #{shared_path}/config/nginx.conf"
+      inform "You must edit /etc/nginx/nginx.conf to include the vhost config file."
+    end
   end
 
   desc "Create mongrel_cluster.yml."
   task :mongrel_cluster_yml do
-    # Copy mongrel_cluster.yml if it doesn't exist.
     result = run_and_return("ls #{shared_path}/config")
-    unless result.match(/mongrel_cluster\.yml/)
+    if result.match(/mongrel_cluster\.yml/)
+      inform "mongrel_cluster.yml alread exists."
+    else
       contents = render_erb_template(File.dirname(__FILE__) + "/templates/mongrel_cluster.yml.erb")
       put contents, "#{shared_path}/config/mongrel_cluster.yml"
       inform "mongrel_cluster.yml copied succesfully."
@@ -133,10 +118,9 @@ namespace :config do
   
   desc "Create default.base for Ultrasphinx"
   task :ultrasphinx_default_base do
-    return unless using_ultrasphinx?
     result = run_and_return("ls #{shared_path}/config/ultrasphinx")
     if result.match(/default\.base/)
-      inform "default.base already exists, delete it first."
+      inform "default.base already exists."
     else
       contents = render_erb_template(File.dirname(__FILE__) + "/templates/default.base.erb")
       put contents, "#{shared_path}/config/ultrasphinx/default.base"
@@ -144,24 +128,42 @@ namespace :config do
     end
   end
   
-  desc "Create Index Folder for Ultrasphinx"
-  task :ultrasphinx_index_folders do
-    return unless using_ultrasphinx?
-    inform "Creating Sphinx index folder #{sphinx_db_path}" 
-    run "mkdir -p #{sphinx_db_path}/#{rails_env}"
+  desc "Create juggernaut_config.yml"
+  task :create_juggernaut_config_yml do
+    result = run_and_return("ls #{shared_path}/config/")
+    if result.match(/juggernaut_config\.yml/)
+      inform "juggernaut_config.yml already exists, delete it first."
+    else
+      contents = render_erb_template(File.dirname(__FILE__) + "/templates/juggernaut_config.yml.erb")
+      put contents, "#{shared_path}/config/juggernaut_config.yml"
+      inform "juggernaut_config.yml copied succesfully."
+    end
+  end
+  
+  desc "Create ferret_server.yml"
+  task :create_ferret_server_yml do
+    result = run_and_return("ls #{shared_path}/config/")
+    if result.match(/ferret_server\.yml/)
+      inform "ferret_server.yml already exists, delete it first."
+    else
+      contents = render_erb_template(File.dirname(__FILE__) + "/templates/ferret_server.yml.erb")
+      put contents, "#{shared_path}/config/ferret_server.yml"
+      inform "ferret_server.yml copied succesfully."
+    end
   end
 
   desc "Main method for creating shared configs"
   task :create_shared_config do
-    drop_mysql_db
     create_mysql_db
     shared_config
     database_yml
-    nginx_conf
+    create_nginx_conf
     mongrel_cluster_yml
     memcached_yml if using_memcached?
     ultrasphinx_index_folders if using_ultrasphinx?
     ultrasphinx_default_base if using_ultrasphinx?
+    create_juggernaut_config_yml if using_juggernaut?
+    create_ferret_server_yml if using_ferret?
   end
 
   after "deploy:setup", "config:create_shared_config" 
@@ -192,6 +194,8 @@ namespace :deploy do
     run "ln -nfs #{shared_path}/config/database.yml #{current_path}/config/database.yml" 
     run "ln -nfs #{shared_path}/config/ultrasphinx #{current_path}/config/ultrasphinx" if using_ultrasphinx?
     run "ln -nfs #{shared_path}/config/memcached.yml #{current_path}/config/memcached.yml" if using_memcached?
+    run "ln -nfs #{shared_path}/config/ferret_server.yml #{current_path}/config/ferret_server.yml" if using_ferret?
+    run "ln -nfs #{shared_path}/config/juggernaut_config.yml #{current_path}/config/juggernaut_config.yml" if using_juggernaut?
     run "ln -nfs #{shared_path}/sessions #{current_path}/tmp/sessions"
     run "ln -nfs #{shared_path}/pids #{current_path}/tmp/pids"
     run "ln -nfs #{shared_path}/log #{current_path}/tmp/log"    
@@ -313,3 +317,4 @@ namespace :ultrasphinx do
     end
   end
 end
+
