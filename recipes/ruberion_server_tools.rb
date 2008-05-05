@@ -318,3 +318,36 @@ namespace :ultrasphinx do
   end
 end
 
+
+# ==========================
+# ACTS AS FERRET Tasks
+# ==========================
+
+
+namespace :ferret do
+
+  desc "Stop Ferret daemon"
+  task :stop, :roles => :app do
+    begin
+      invoke_command "cd #{current_path} && ./script/ferret_server --environment=#{rails_env} stop"
+    rescue
+      puts "Seems like it's not running yet, skip"
+    end
+  end
+
+  desc "Start Ferret daemon"
+  task :start, :roles => :app do
+    begin
+      invoke_command "cd #{current_path} && ./script/ferret_server --environment=#{rails_env} start"
+    rescue
+      puts "There was an error, could not start"
+    end
+  end
+
+  desc "Restart Ferret daemon"
+  task :restart, :roles => :app do
+    stop
+    sleep 2
+    start
+  end
+end
