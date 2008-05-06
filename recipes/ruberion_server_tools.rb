@@ -185,21 +185,32 @@ namespace :deploy do
     deploy.mongrel.restart
   end
   
-  
-  desc "Set the proper permissions for directories and files on the script folder"
-  task :after_symlink do
-    run(chmod755.collect do |item|
-      "chmod -R 755 #{current_path}/#{item}*"
-    end.join(" && "))
-    run "ln -nfs #{shared_path}/config/database.yml #{current_path}/config/database.yml" 
+  desc "Symlink Config Files"
+  task :create_symlinks do
     run "ln -nfs #{shared_path}/config/ultrasphinx #{current_path}/config/ultrasphinx" if using_ultrasphinx?
     run "ln -nfs #{shared_path}/config/memcached.yml #{current_path}/config/memcached.yml" if using_memcached?
     run "ln -nfs #{shared_path}/config/ferret_server.yml #{current_path}/config/ferret_server.yml" if using_ferret?
     run "ln -nfs #{shared_path}/config/juggernaut_config.yml #{current_path}/config/juggernaut_config.yml" if using_juggernaut?
     run "ln -nfs #{shared_path}/sessions #{current_path}/tmp/sessions"
     run "ln -nfs #{shared_path}/pids #{current_path}/tmp/pids"
-    run "ln -nfs #{shared_path}/log #{current_path}/tmp/log"    
+    run "ln -nfs #{shared_path}/log #{current_path}/tmp/log"
+    config_files_to_symlink.each do |file|
+      run "ln -nfs #{shared_path}/config/#{file} #{current_path}/config/#{file}" 
+    end
   end
+  
+  desc "Set the proper permissions for directories and files on the script folder"
+  task :set_permissions do
+    run(chmod755.collect do |item|
+      "chmod -R 755 #{current_path}/#{item}*"
+    end.join(" && "))
+  end
+  
+
+  # task :after_symlink do
+  #   set_permissions
+  #   create_symlinks
+  # end
 
   namespace :mongrel do
     desc "Restart task for mongrel"
@@ -208,20 +219,20 @@ namespace :deploy do
       sleep 5
       deploy.mongrel.start
     end
-
     desc "Stop the mongrel appserver"
     task :stop do
       invoke_command "mongrel_rails cluster::stop --config #{shared_path}/config/mongrel_cluster.yml"
     end
-
     desc "Start the mongrel appserver"
     task :start do
       invoke_command "mongrel_rails cluster::start --config #{shared_path}/config/mongrel_cluster.yml", :via => run_method
     end
-  
   end
   
 end
+
+# run after_symlinks
+after("deploy:symlink", "deploy:set_permissions", "deploy:create_symlinks")
 
 # NGINX Restart Task
 namespace :nginx do
@@ -315,39 +326,5 @@ namespace :ultrasphinx do
       puts "Seems like it's not deployed yet, skip"
       puts "maybe you should deploy first or run cap config:ultrasphinx_default_base"
     end
-  end
-end
-
-
-# ==========================
-# ACTS AS FERRET Tasks
-# ==========================
-
-
-namespace :ferret do
-
-  desc "Stop Ferret daemon"
-  task :stop, :roles => :app do
-    begin
-      invoke_command "cd #{current_path} && ./script/ferret_server --environment=#{rails_env} stop"
-    rescue
-      puts "Seems like it's not running yet, skip"
-    end
-  end
-
-  desc "Start Ferret daemon"
-  task :start, :roles => :app do
-    begin
-      invoke_command "cd #{current_path} && ./script/ferret_server --environment=#{rails_env} start"
-    rescue
-      puts "There was an error, could not start"
-    end
-  end
-
-  desc "Restart Ferret daemon"
-  task :restart, :roles => :app do
-    stop
-    sleep 2
-    start
   end
 end
