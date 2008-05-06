@@ -3,7 +3,7 @@ namespace :ferret do
   
   desc "Stop Ferret Server"
   task :stop do
-    inform "Stopping push_server"
+    inform "Stopping Ferret server"
     begin
       run "cd #{current_path} && ./script/ferret_server stop"
     rescue
