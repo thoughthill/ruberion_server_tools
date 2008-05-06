@@ -160,7 +160,6 @@ namespace :config do
     create_nginx_conf
     mongrel_cluster_yml
     memcached_yml if using_memcached?
-    ultrasphinx_index_folders if using_ultrasphinx?
     ultrasphinx_default_base if using_ultrasphinx?
     create_juggernaut_config_yml if using_juggernaut?
     create_ferret_server_yml if using_ferret?
