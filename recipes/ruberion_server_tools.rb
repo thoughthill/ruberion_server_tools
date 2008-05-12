@@ -188,7 +188,7 @@ namespace :deploy do
     run "ln -nfs #{shared_path}/sessions #{current_path}/tmp/sessions"
     run "ln -nfs #{shared_path}/pids #{current_path}/tmp/pids"
     run "ln -nfs #{shared_path}/log #{current_path}/tmp/log"
-    run "ln -nfs #{shared_path}/tmp/attachment_fu #{current_path}/tmp/attachment_fu"
+    run "ln -nfs #{shared_path}/attachment_fu #{current_path}/tmp/attachment_fu"
     config_files_to_symlink.each do |file|
       run "ln -nfs #{shared_path}/config/#{file} #{current_path}/config/#{file}" 
     end
