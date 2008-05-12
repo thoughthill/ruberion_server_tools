@@ -153,6 +153,19 @@ namespace :config do
       inform "ferret_server.yml copied succesfully."
     end
   end
+  
+  desc "Create mod_rails vhost"
+  task :create_mod_rails_vhost do
+    name = application.gsub('.', '_')
+    result = run_and_return("ls /etc/apache2/vhosts.d")
+    if result.match(name)
+      inform "/etc/apache2/vhosts.d/#{name}.conf already exist"
+    else
+      contents = render_erb_template(File.dirname(__FILE__) + "/templates/mod_rails.conf.erb")
+      put contents, "/etc/apache2/vhosts.d/#{name}.conf"
+      inform "The file /etc/apache2/vhosts.d/#{name}.conf writen succesfully."
+    end
+  end
 
   desc "Main method for creating shared configs"
   task :create_shared_config do
