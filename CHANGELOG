@@ -1,15 +1,7 @@
-* some code refractoring 
-* Added support for juggernaut (since deploying clockingit)
-* Added Ferret Support (since deploying clockingit)
-	added ferret_server.yml.erb template
-* added git to deploy.example
-* Updated default.base for ultrasphinx
+[March 13, 2008]
 
-[April 29, 2008]
 
-* added "cap env:list"
-* changed the order of ultrasphinx loading and stoping
-* updated deploy.example
+
 
 [March 11, 2008]
 
@@ -20,18 +12,26 @@
 [March 8, 2008]
 
 * Added Support for memcached.yml  [Fred]
-
 * Fixed a bug so that minimum mongrels is 1 instead of 2 [fred]
-
 * Fixed a bug in nginx.vhost.conf.erb 	[Fred]
 	adding string and integer is not possible :)
-	
 * Fixed database.yml.erb to support mysql user, password and database name
 	from within deploy.rb [Fred]
-
 * Added support for Ultrasphinx rake tasks [Fred]
-
 * Added Quick Deploy Task [Fred]
 	it will only update the current branch and restart mongrels
-
 * Add tasks to create Mysql Databases for first setup [Fred]
+
+
+[April 29, 2008]
+
+* added "cap env:list"
+* changed the order of ultrasphinx loading and stoping
+* updated deploy.example
+
+* some code refractoring 
+* Added support for juggernaut (since deploying clockingit)
+* Added Ferret Support (since deploying clockingit)
+	added ferret_server.yml.erb template
+* added git to deploy.example
+* Updated default.base for ultrasphinx
