@@ -1,7 +1,7 @@
 Capistrano::Configuration.instance(:must_exist).load do
 
   after "deploy:setup", "assets:setup"
-  after "deploy", "assets:symlink", "assets:plugin_symlinks", "assets:set_permissions"
+  after "deploy:symlink", "assets:symlink", "assets:plugin_symlinks", "assets:set_permissions"
 
   namespace :assets do
   

@@ -2,7 +2,15 @@
 # Sphinx Index Tasks
 # ==========================
 Capistrano::Configuration.instance(:must_exist).load do
-
+  
+  # AFTER HOOKS
+  if enable_ultrasphinx?
+    before 'deploy:stop',     'ultrasphinx:stop'
+    before 'deploy:start',    "ultrasphinx:configure", "ultrasphinx:index", 'ultrasphinx:start'
+    before 'deploy:restart',  'ultrasphinx:restart'
+    after  'deploy:rollback', 'ultrasphinx:restart'
+  end
+  
   namespace :ultrasphinx do
   
     desc "Check if sphinx daemon is running"
@@ -16,31 +24,25 @@ Capistrano::Configuration.instance(:must_exist).load do
 
     desc "Ultrasphinx Bootstrap"
     task :bootstrap, :roles => :app do    
-      if using_ultrasphinx?
-        invoke_command "cd #{current_path} && RAILS_ENV=#{rails_env} rake ultrasphinx:bootstrap"
-      else
-        puts "Enable ultrasphinx on deploy.rb first."
-      end
+      invoke_command "cd #{current_path} && RAILS_ENV=#{rails_env} rake ultrasphinx:bootstrap"
+      puts "Enable ultrasphinx on deploy.rb first."
     end
 
     desc "Update Index"
     task :index, :roles => :app do
-      if using_ultrasphinx? && ultrasphinx_configured?
+      if ultrasphinx_configured?
         invoke_command "cd #{current_path} && RAILS_ENV=#{rails_env} rake ultrasphinx:index"
-      else
         puts "Enable ultrasphinx on deploy.rb or run 'cap config:ultrasphinx_default_base'"
       end
     end
 
     desc "Configure Sphinx"
     task :configure, :roles => :app do
-      if using_ultrasphinx?
-        if ultrasphinx_configured?
-          invoke_command "cd #{current_path} && RAILS_ENV=#{rails_env} rake ultrasphinx:configure"
-        else
-          puts "The file config/ultrasphinx/default.base is missing. Create it first"
-          puts " you can run cap config:ultrasphinx_default_base"
-        end
+      if ultrasphinx_configured?
+        invoke_command "cd #{current_path} && RAILS_ENV=#{rails_env} rake ultrasphinx:configure"
+      else
+        puts "The file config/ultrasphinx/default.base is missing. Create it first"
+        puts " you can run cap config:ultrasphinx_default_base"
       end
     end
 
