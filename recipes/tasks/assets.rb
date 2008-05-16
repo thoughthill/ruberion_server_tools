@@ -6,28 +6,44 @@ Capistrano::Configuration.instance(:must_exist).load do
   namespace :assets do
   
     task :setup, :role => :app do
-      run "cd #{shared_path}; umask 02 && mkdir -p #{public_assets.join(' ')}"
-      run "cd #{shared_path}; umask 02 && mkdir -p #{tmp_assets.join(' ')}"
+      unless public_assets.empty?
+        run "cd #{shared_path}; umask 02 && mkdir -p #{public_assets.join(' ')}"
+      end
+      
+      unless tmp_assets.empty?
+        run "cd #{shared_path}; umask 02 && mkdir -p #{tmp_assets.join(' ')}"
+      end
       run "cd #{shared_path}; umask 02 && mkdir -p config"
+      
       if enable_ferret?
         run "mkdir -p #{shared_path}/index"
       end
+      
       if enable_ultrasphinx?
         run "mkdir -p #{shared_path}/config/ultrasphinx"
         run "mkdir -p #{sphinx_db_path}/#{rails_env}"
-      end
+      end  
     end
-  
+    
+    
     task :symlink, :role => :app do
-      fetch(:config_assets).each do |file|
-        run "ln -nfs #{shared_path}/config/#{file} #{current_path}/config/#{file}" 
+      unless config_assets.empty?
+        fetch(:config_assets).each do |file|
+          run "ln -nfs #{shared_path}/config/#{file} #{current_path}/config/#{file}" 
+        end
       end
-      fetch(:public_assets).each do |asset|
-        run "rm -rf  #{release_path}/public/#{asset}"
-        run "ln -nfs #{shared_path}/assets/#{asset} #{release_path}/public/#{asset}"
+      
+      unless public_assets.empty?
+        fetch(:public_assets).each do |asset|
+          run "rm -rf  #{release_path}/public/#{asset}"
+          run "ln -nfs #{shared_path}/assets/#{asset} #{release_path}/public/#{asset}"
+        end
       end
-      fetch(:tmp_assets).each do |dir|
-        run "ln -nfs #{shared_path}/#{dir} #{current_path}/tmp/#{dir}"
+      
+      unless tmp_assets.empty?
+        fetch(:tmp_assets).each do |dir|
+          run "ln -nfs #{shared_path}/#{dir} #{current_path}/tmp/#{dir}"
+        end
       end
     end
     
