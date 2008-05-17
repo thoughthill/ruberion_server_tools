@@ -1,31 +1,29 @@
 Capistrano::Configuration.instance(:must_exist).load do
 
   after "deploy:setup", "assets:setup"
-  after "deploy:symlink", "assets:symlink", "assets:plugin_symlinks", "assets:set_permissions"
+  after "deploy:symlink", "assets:setup", "assets:symlink", "assets:plugin_symlinks", "assets:set_permissions"
 
   namespace :assets do
-  
+    
+    desc "This will create the appropriate asset directories"
     task :setup, :role => :app do
+      run "cd #{shared_path}; umask 02 && mkdir -p config"
       unless public_assets.empty?
         run "cd #{shared_path}; umask 02 && mkdir -p #{public_assets.join(' ')}"
       end
-      
       unless tmp_assets.empty?
         run "cd #{shared_path}; umask 02 && mkdir -p #{tmp_assets.join(' ')}"
       end
-      run "cd #{shared_path}; umask 02 && mkdir -p config"
-      
       if enable_ferret?
         run "mkdir -p #{shared_path}/index"
       end
-      
       if enable_ultrasphinx?
         run "mkdir -p #{shared_path}/config/ultrasphinx"
         run "mkdir -p #{sphinx_db_path}/#{rails_env}"
       end  
     end
     
-    
+    desc "This will create the symlinks for assets"
     task :symlink, :role => :app do
       unless config_assets.empty?
         fetch(:config_assets).each do |file|
@@ -34,15 +32,16 @@ Capistrano::Configuration.instance(:must_exist).load do
       end
       
       unless public_assets.empty?
-        fetch(:public_assets).each do |asset|
-          run "rm -rf  #{release_path}/public/#{asset}"
-          run "ln -nfs #{shared_path}/assets/#{asset} #{release_path}/public/#{asset}"
+        fetch(:public_assets).each do |dir|
+          run "rm -rf  #{release_path}/public/#{dir}"
+          run "ln -nfs #{shared_path}/#{dir} #{current_path}/public/"
         end
       end
       
       unless tmp_assets.empty?
         fetch(:tmp_assets).each do |dir|
-          run "ln -nfs #{shared_path}/#{dir} #{current_path}/tmp/#{dir}"
+          run "rm -rf  #{current_path}/tmp/#{dir}"
+          run "ln -nfs #{shared_path}/#{dir} #{current_path}/tmp/"
         end
       end
     end
