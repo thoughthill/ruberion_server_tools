@@ -22,6 +22,8 @@ Capistrano::Configuration.instance(:must_exist).load do
   # Add /usr/local/sbin to find Sphinx Binaries
   default_environment["PATH"] = "/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin"
   default_run_options[:pty] = true
+  _cset(:shell) { "/bin/bash" }
+  _cset(:default_shell) { "/bin/bash" }
   
   # ASSETS and symlinks 
   _cset(:public_assets) { abort "Please specify assets, set :public_assets, %w(foo bar)" }
