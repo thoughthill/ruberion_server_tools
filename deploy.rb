@@ -37,6 +37,11 @@ end
 set(:application, "app.com")
 set(:deploy_to, "/var/www/apps/#{application}")
 
+### 
+role :web, webserver1
+role :app, webserver1
+role :db,  webserver1, :primary => true
+
 ### GitHub
 set(:repository, "git@github.com:xxx/xxx.git")
 set(:scm, "git")
