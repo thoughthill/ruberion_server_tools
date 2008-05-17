@@ -40,7 +40,7 @@ Capistrano::Configuration.instance(:must_exist).load do
   
   # Default sphinx variables
   _cset(:sphinx_use_delta) {false}
-  _cset(:sphinx_db_path) {"/opt/local/var/db/sphinx/"}
+  _cset(:sphinx_db_path) {"#{shared_path}/index/sphinx/"}
   _cset(:sphinx_mem_limit) {"128M"}
   _cset(:sphinx_delta_time) {14400}
   _cset(:sphinx_server_port) {3312}
