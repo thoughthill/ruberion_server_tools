@@ -6,6 +6,7 @@ if (ENV["staging"].nil? and ENV["production"].nil?)
   puts "| 'cap deploy staging=true' will deploy to Staging Server       |"
   puts "| 'cap deploy production=true' will deploy to Production Server |"
   puts "| or to make it fixed for the session 'export staging=true'     |"
+  puts "|   alternatively you can run 'cap env:list' to see the setup   |"
   puts "|_______________________________________________________________|"
   abort
 end

@@ -1,4 +1,6 @@
 
+load 'config/deploy'
+
 # Add this path to ruby load path
 $:.unshift File.dirname(__FILE__)
 

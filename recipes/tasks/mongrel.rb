@@ -1,10 +1,15 @@
+#############################################################
+#       Mongrels
+#############################################################
+
 # Deprecated.  The functionality is now in mongrel_cluster for Cap 2
+
 Capistrano::Configuration.instance(:must_exist).load do
   
-  if deploy_method.downcase == "mongrel"
-    #override some deploy tasks because of mongrel
+  if deploy_method == "mongrel"
+    # Use mongrel 
     namespace :deploy do
-      desc "override the default so we don't mess with dispatch.cgi or dispatch.fcgi"
+      desc "Restart Mongrel servers"
       task :restart do
         deploy.mongrel.restart
       end

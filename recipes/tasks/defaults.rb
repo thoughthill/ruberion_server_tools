@@ -14,10 +14,7 @@ Capistrano::Configuration.instance(:must_exist).load do
 
   # Deploy Methods: mongrel, mod_rails, *dispacht_fcgi*, *thin*, *ebb*
   # *soon I will add those*
-  _cset(:deploy_method) {"mongrel"}
-
-  # don't do a fresh checkout, just svn update
-  _cset(:deploy_via) {:remote_cache}
+  _cset(:deploy_method) { abort "Please set to one of the available methods:\n - mongrel \n - mod_rails" }
 
   # Add /usr/local/sbin to find Sphinx Binaries
   default_environment["PATH"] = "/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin"
