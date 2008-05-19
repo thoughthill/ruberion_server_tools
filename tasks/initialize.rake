@@ -88,7 +88,7 @@ namespace :setup do
   
   desc "Copy plugin test files to spec folder"
   task :copy_test_files do
-    copy_file("vendor/plugins/ruberion_server_tools/spec/setup_spec.rb", "./spec/setup_spec.rb")
+    system("vendor/plugins/ruberion_server_tools/spec/*.rb", "./spec/")
   end
   
   
