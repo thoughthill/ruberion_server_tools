@@ -76,15 +76,22 @@ namespace :setup do
       RAILS_ENV = env
       inform "Setting up #{env} database..."
       begin 
-        system "db:drop RAILS_ENV=#{env}"
+        system "RAILS_ENV=#{env} db:drop"
       rescue
         puts "database does not exist"
       end
-      system "rake db:create RAILS_ENV=#{env}"
-      system "rake db:schema:load RAILS_ENV=#{env}"
-      system "rake spec:db:fixtures:load RAILS_ENV=#{env}"
+      system "RAILS_ENV=#{env} rake db:create"
+      system "RAILS_ENV=#{env} rake db:schema:load"
+      system "RAILS_ENV=#{env} rake spec:db:fixtures:load"
     end
   end
+  
+  desc "Copy plugin test files to spec folder"
+  task :copy_test_files do
+    copy_file("vendor/plugins/ruberion_server_tools/spec/setup_spec.rb", "./spec/setup_spec.rb")
+  end
+  
+  
   
   # dont change the order
   desc "Run Setup to get the Application ready to roll."
@@ -130,6 +137,7 @@ end
     else
       @mysql_host = "localhost"
     end
+    
   end
   
   
