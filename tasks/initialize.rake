@@ -62,7 +62,7 @@ namespace :setup do
       inform "config/database.yml already exist. Skiping."
     else
       inform "Im going to generate database.yml for you."
-      file = File.open("./lib/templates/database.yml.erb", "r")
+      file = File.open("vendor/plugins/ruberion_server_tools/tasks/database.yml.erb", "r")
       content = file.readlines.join
       database_yml = ERB.new(content, 0, "%<>")
       file.close
