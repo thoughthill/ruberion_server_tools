@@ -13,19 +13,18 @@ end
 
 def backup_file(file)
   if File.exist?(file)
-    File.move(file, file+"__.bak" )
+    system("mv #{file} #{file}__.bak")
   end
 end
 
 def restore_file(file)
-  if File.exist?(file)
-    File.delete(file)
-    File.move(file+"__.bak", file)
+  if File.exist?(file+"__.bak")
+    system("mv #{file}__.bak #{file}")
   end
 end
 
 def remove_file(file)
   if File.exist?(file)
-    FileUtils.rm_rf(file)
+    system("rm -rf #{file}")
   end
 end

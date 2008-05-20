@@ -15,20 +15,22 @@ namespace :setup do
   task :setup_ultrasphinx do
     # check if the ultrasphinx example folder is in there
     # if it is, create the folder and copy the sample files
+    # if it is not there, copy from plugins/ultrasphinx/examples
+    check_sphinx_installed
     config_files = Dir.entries("./config/")
-    if sample_dir = config_files.find { |t| t.match(/ultrasphinx\./) }
-      check_sphinx_installed
+    if (sample_dir = config_files.find {|t| t.match(/ultrasphinx\./)})
       inform "Creating and copying config/ultrasphinx.example/* to config/ultrasphinx/"
-      system "mkdir -p config/ultrasphinx"
-      system "cp config/#{sample_dir}/* config/ultrasphinx/"
-      Rake::Task['setup:configure_ultrasphinx'].invoke
+      system "mkdir -p config/ultrasphinx; cp config/#{sample_dir}/* config/ultrasphinx/"
+    else
+      # copy from plugins/ultrasphinx/examples/default.base
+      system("mkdir config/ultrasphinx; cp vendor/plugins/ultrasphinx/examples/default.base config/ultrasphinx/")
     end
   end
   
   desc "configure ultrasphinx" 
   task :configure_ultrasphinx do
+    check_sphinx_installed
     if Dir.entries("./config/").find { |t| t.match(/ultrasphinx/) }
-      check_sphinx_installed
       begin
         inform "Runing ultrasphinx:configure"
         Rake::Task['ultrasphinx:configure'].invoke
@@ -40,6 +42,7 @@ namespace :setup do
   
   desc "index ultrasphinx"
   task :index_ultrasphinx do
+    check_sphinx_installed
     if Dir.entries("./config/").find { |t| t.match(/ultrasphinx/) }
       begin
         inform "Runing ultrasphinx:index"
@@ -76,7 +79,7 @@ namespace :setup do
       RAILS_ENV = env
       inform "Setting up #{env} database..."
       begin 
-        system "RAILS_ENV=#{env} db:drop"
+        system "RAILS_ENV=#{env} rake db:drop"
       rescue
         puts "database does not exist"
       end
@@ -98,9 +101,14 @@ namespace :setup do
   task :initialize do
     Rake::Task['setup:create_required_dirs'].invoke
     Rake::Task['setup:create_database_yml'].invoke
-    Rake::Task['setup:setup_ultrasphinx'].invoke
+    if check_ultrasphinx_plugin
+      Rake::Task['setup:setup_ultrasphinx'].invoke
+      Rake::Task['setup:configure_ultrasphinx'].invoke
+    end
     Rake::Task['setup:setup_database'].invoke
-    Rake::Task['setup:index_ultrasphinx'].invoke
+    if check_ultrasphinx_plugin
+      #Rake::Task['setup:index_ultrasphinx'].invoke
+    end
   end
 
 end
@@ -151,6 +159,15 @@ end
          " host='localhost'"
     exit
   end
+  
+  def check_ultrasphinx_plugin
+    plugins = Dir.entries("./vendor/plugins/")
+     if plugins.find {|t| t.match(/ultrasphinx/)}
+       true
+     else
+       false
+     end
+  end
 
   def sphinx_installed(version)
     begin
@@ -170,8 +187,7 @@ end
       true
     else
       inform "Abort: "
-      puts "Fatal: #{@version} is not installed on the system."
-      puts "or it was not found in the PATH"
+      puts "Fatal: #{@version} is not installed on the system, or it was not found in the PATH"
       abort
     end
   end

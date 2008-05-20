@@ -42,18 +42,5 @@ context "rake setup" do
     restore_file(file)
   end
   
-  # it "should not setup ultrasphinx if config/ultrasphinx(.example/.sample) is not there" do
-  #   file = "#{RAILS_ROOT}/config/ultrasphinx"
-  #   config_files = Dir.entries("#{RAILS_ROOT}/config/")
-  #   if sample_dir = config_files.find { |t| t.match(/ultrasphinx\./) }
-  #     puts "-- #{sample_dir} --"
-  #     backup_file(sample_dir)
-  #     backup_file(file)
-  #     system('rake setup:setup_ultrasphinx')
-  #     ###assert !File.exist?(file)
-  #     restore_file(sample_dir)
-  #     restore_file(file)
-  #   end
-  # end
 
 end
