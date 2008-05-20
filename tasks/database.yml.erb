@@ -1,0 +1,23 @@
+test:
+  adapter: mysql
+  encoding: utf8
+  database: <%= @application+"_test" %>
+  username: <%= @mysql_username %>
+  password: <%= @mysql_password %>
+  host: <%= @mysql_host %>
+
+development:
+  adapter: mysql
+  encoding: utf8
+  database: <%= @application+"_development" %>
+  username: <%= @mysql_username %>
+  password: <%= @mysql_password %>
+  host: <%= @mysql_host %>
+
+production:
+  adapter: mysql
+  encoding: utf8
+  database: <%= @application+"_production" %>
+  username: <%= @mysql_username %>
+  password: <%= @mysql_password %>
+
