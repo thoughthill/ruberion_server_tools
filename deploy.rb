@@ -1,4 +1,4 @@
-set(require "erb"
+require "erb"
 
 if (ENV["staging"].nil? and ENV["production"].nil?)
   puts "._______________________________________________________________."
