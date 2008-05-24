@@ -10,31 +10,52 @@ if (ENV["staging"].nil? and ENV["production"].nil?)
   puts "|_______________________________________________________________|"
   abort
 end
+# Staging
+set(:staging_server, "10.10.10.10")
+set(:staging_deploy_method, "mongrel")
+set(:staging_mongrel_port, "8001") # we usually jump in groups of 10 starting at 8001
+set(:staging_mongrel_servers, 1)
+set(:staging_domains, ["staging.app.com"])
+# Production
+set(:production_server, "10.10.10.10")
+set(:production_deploy_method, "mongrel")
+set(:production_mongrel_port, "8001") # we usually jump in groups of 10 starting at 8001
+set(:production_mongrel_servers, 1)
+set(:production_domains, ["www.app.com", "app.com"])
+# Common
+set(:application, "app.com")
+set(:repository, "git@github.com:xxx/xxx.git")
+# Enable Extensions MOST LIKELY TO CHANGE
+# Uncomment to change
+#set(:enable_ultrasphinx?, true) # default false
+#set(:enable_memcached?, true) # default false
+#set(:enable_ferret?, true) # default false
+#set(:enable_push_server?, true) # default false
+#set(:enable_juggernaut?, true) # default false
 
 # "cap deploy staging=true" will deploy to Staging Server
 if ENV["staging"]
-  set(:webserver1, "10.10.10.10")
+  set(:webserver1, staging_server)
   # If you want to use Mongrel. 
   # Available options: mongrel, mod_rails
-  set(:deploy_method, "mongrel")
-  set(:mongrel_port, "8001") # we usually jump in groups of 10 starting at 8001
-  set(:mongrel_servers, 1)
+  set(:deploy_method, staging_deploy_method)
+  set(:mongrel_port, staging_mongrel_port) # we usually jump in groups of 10 starting at 8001
+  set(:mongrel_servers, staging_mongrel_servers)
   # Domain Names for vhosts
-  set(:domain_names, ["staging.app.com"])
+  set(:domain_names, staging_domains)
 end
 
 # "cap deploy production=true" will deploy to Production Server
 if ENV["production"]
-  set(:webserver1, "10.11.11.11")
+  set(:webserver1, production_server)
   # If you want to use mod_rails. 
   # Available options: mongrel, mod_rails
-  set(:deploy_method, "mod_rails")
+  set(:deploy_method, production_deploy_method)
+  set(:mongrel_port, production_mongrel_port) # we usually jump in groups of 10 starting at 8001
+  set(:mongrel_servers, production_mongrel_servers)
   # Domain Names for vhosts
-  set(:domain_names, ["www.app.com", "app.com"])
+  set(:domain_names, production_domains)
 end
-
-# Please set the name of the domain/application here
-set(:application, "app.com")
 
 # Please set where to deploy to
 # Default value is to go to /var/www/apps/<application>/
@@ -46,7 +67,6 @@ role(:app, webserver1)
 role(:db,  webserver1, :primary => true)
 
 ### GitHub
-set(:repository, "git@github.com:xxx/xxx.git")
 set(:scm, "git")
 set(:scm_passphrase, "" )
 set(:git_enable_submodules, true)
@@ -61,14 +81,6 @@ set(:tmp_assets, %w(sessions cache pids) )
 set(:config_assets, %w(database.yml) )
 
 ### These are all defaulted in ruberion_server_tools/recipes/defaults.rb
-
-# Enable Extensions MOST LIKELY TO CHANGE
-# Uncomment to change
-#set(:enable_ultrasphinx?, true) # default false
-#set(:enable_memcached?, true) # default false
-#set(:enable_ferret?, true) # default false
-#set(:enable_push_server?, true) # default false
-#set(:enable_juggernaut?, true) # default false
 
 ### Servers
 # Sets the environment in rails
