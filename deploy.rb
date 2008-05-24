@@ -63,12 +63,12 @@ set(:config_assets, %w(database.yml) )
 ### These are all defaulted in ruberion_server_tools/recipes/defaults.rb
 
 # Enable Extensions MOST LIKELY TO CHANGE
-#set(:enable_memcached?,false)
-#set(:enable_ultrasphinx?,false)
-#set(:enable_memcached?, false)
-#set(:enable_ferret?, false)
-#set(:enable_push_server?, false)
-#set(:enable_juggernaut?, false)
+# Uncomment to change
+#set(:enable_ultrasphinx?, true) # default false
+#set(:enable_memcached?, true) # default false
+#set(:enable_ferret?, true) # default false
+#set(:enable_push_server?, true) # default false
+#set(:enable_juggernaut?, true) # default false
 
 ### Servers
 # Sets the environment in rails
