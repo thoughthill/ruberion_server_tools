@@ -13,7 +13,13 @@ end
 # Staging
 set(:staging_server, "10.10.10.10")
 set(:staging_deploy_method, "mongrel")
-set(:staging_mongrel_port, "8001") # we usually jump in groups of 10 starting at 8001
+set(:staging_mongrel_port, "8001") 
+#birthingfromwithin.com 8000
+#dietdocshop.com 8001
+#ecounseling.com 8011
+#thedietdoc.com 8031
+#neighborhood360.com 8061
+#ruberion.com 8071 
 set(:staging_mongrel_servers, 1)
 set(:staging_domains, ["staging.app.com"])
 # Production
